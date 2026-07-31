@@ -8,8 +8,8 @@ from typing import Self, BinaryIO
 from src.lib.assembly.artifact.memory_map import MemoryMap, AreaTypes
 from src.lib.assembly.artifact.variable import Label, Constant
 from src.lib.assembly.artifact.variables import Variables
-from src.lib.assembly.data_structure.instruction.operand import Operand
-from src.lib.assembly.script.helpers import (
+from src.lib.common.operand import Operand
+from src.lib.common.script.helpers import (
     ScriptMode,
     ScriptSection,
     Line,
@@ -17,6 +17,8 @@ from src.lib.assembly.script.helpers import (
     clean_line,
     ArrayPattern,
 )
+from src.lib.pseudo_languages.animation.animation_instruction import AnimationInstruction
+from src.lib.pseudo_languages.animation.thread_counter import ThreadCounter
 from src.lib.misc.exception import (
     MissingSectionAttribute,
     LineConflict,
@@ -25,7 +27,6 @@ from src.lib.misc.exception import (
     UndefinedFlags,
     MismatchedMappingModes,
     IllegalAddress,
-    UnrecognizedStringType,
 )
 from src.lib.assembly.data_structure.blob import Blob
 from src.lib.assembly.data_structure.array import Array
@@ -34,8 +35,8 @@ from src.lib.assembly.data_structure.instruction.instruction import Instruction
 from src.lib.assembly.artifact.flags import Flags, RegisterWidth
 from src.lib.assembly.data_structure.regex import InstructionRegex, ArtifactRegex, DataStructureRegex
 from src.lib.assembly.data_structure.string.string import String, StringTypes
-from src.lib.assembly.data_structure.data_structure import DataStructure
-from src.lib.assembly.bytes import Bytes
+from src.lib.common.data_structure import DataStructure
+from src.lib.common.bytes import Bytes
 
 
 class Script:
@@ -60,9 +61,10 @@ class Script:
             script.lines += cls._append_script_file(filename)
 
         cursor = 0
+        threads = 0
         for line in script.lines:
             logging.debug(f"Pre-parsing {repr(line)}.")
-            cursor = script._preparse_line(line, cursor)
+            cursor, threads = script._preparse_line(line, cursor, threads)
         script._parse_lines()
 
         script._detect_anomalies()
@@ -249,6 +251,9 @@ class Script:
                 elif section.mode == ScriptMode.ARRAYS:
                     script._disassemble_arrays(cursor, f, section)
 
+                elif section.mode == ScriptMode.ANIMATION_INSTRUCTIONS:
+                    script._disassemble_animation_instructions(cursor, f, section)
+
         cls.sort_lines(script)
 
         return script
@@ -289,6 +294,8 @@ class Script:
         """
         flags = Flags(m=RegisterWidth.INVALID, x=RegisterWidth.INVALID)
         anchor = None
+        threads = None
+        depth = 0
 
         for line in self.lines:
             logging.info(f"Parsing {repr(line)}.")
@@ -333,13 +340,23 @@ class Script:
                 line.component = string
             elif line.component_info == LineType.VARIABLE_DECLARATION:
                 continue
+            elif line.component_info == LineType.THREAD_COUNTER:
+                thread_counter = ThreadCounter.from_line(**line.regex_groups)
+                line.component = thread_counter
+                threads = line.component.threads
+            elif line.component_info == LineType.ANIMATION_INSTRUCTION:
+                instruction = AnimationInstruction.from_line(
+                    **line.regex_groups, address=line.address, threads=threads, depth=depth, variables=self.variables()
+                )
+                depth = max(depth + instruction.command.depth_modifier, 0)
+                line.component = instruction
             else:
                 raw_line = line.raw_line.strip("\n")
                 message = f"Line '{raw_line}' in file '{line.filename}' is not recognized."
                 logging.error(message)
                 raise UnrecognizedLine(message)
 
-    def _preparse_line(self, line: Line, cursor: int) -> int:
+    def _preparse_line(self, line: Line, cursor: int, threads: int) -> tuple[int, int]:
         """
         Prepares the parsing of a script line by filling some of the fields of the Line and determining the Line length.
         :param line: The line being parsed as a string or as the Line object containing it.
@@ -349,10 +366,7 @@ class Script:
         :raises MismatchedMappingMode: Raised when two different MemoryMaps are set in the files being parsed.
         """
 
-        # if line.address is not None:
-        #    cursor = self.memory_map.to_position(line.address)
-
-        cleaned_line = line.clean_line  # if isinstance(line, Line) else line
+        cleaned_line = line.clean_line
 
         if match := re.fullmatch(ArtifactRegex.MEMORY_MAP, cleaned_line):
             memory_map = MemoryMap.from_line(match.group("mapping_mode"))
@@ -366,12 +380,12 @@ class Script:
             line.component = memory_map
             line.component_info = LineType.MEMORY_MAP
             self.memory_map = memory_map
-            return cursor
+            return cursor, threads
 
         if match := re.fullmatch(ArtifactRegex.VARIABLE_DECLARATION, cleaned_line):
             line.component = Constant.from_line(name=match.group("name"), operand=match.group("operand"))
             line.component_info = LineType.VARIABLE_DECLARATION
-            return cursor
+            return cursor, threads
 
         line.address = self.memory_map.to_address(cursor)
 
@@ -408,11 +422,20 @@ class Script:
             cursor += String.find_length(string=match.group("string"), delimiter=match.group("delimiter"))
             line.component_info = LineType.STRING
 
+        elif match := re.fullmatch(DataStructureRegex.ANIMATION_INSTRUCTION, cleaned_line):
+            cursor += AnimationInstruction.find_length(command=match.group("command"), threads=threads)
+            line.component_info = LineType.ANIMATION_INSTRUCTION
+
         elif match := re.match(InstructionRegex.INSTRUCTION, cleaned_line):
             cursor += Instruction.find_length(
                 command=match.group("command"), operand=match.group("operand"), variables=self.variables()
             )
             line.component_info = LineType.INSTRUCTION
+
+        elif match := re.fullmatch(ArtifactRegex.THREAD_COUNTER, cleaned_line):
+            line.component_info = LineType.THREAD_COUNTER
+            threads = int(match.group("threads"))
+
         else:
             raw_line = line.raw_line.strip("\n")
             message = f"Line '{raw_line}' in file '{line.filename}' is not recognized."
@@ -425,7 +448,7 @@ class Script:
                 for group in line.component_info.regex_groups
             }
 
-        return cursor
+        return cursor, threads
 
     def _disassemble_arrays(self, cursor: int, f: BinaryIO, section: ScriptSection) -> None:
         """
@@ -581,6 +604,52 @@ class Script:
                 for label in instruction.labels:
                     if not self.labels().find_by_address(label.value):
                         self.lines.append(Line.from_component(label))
+
+            self.lines.append(Line.from_component(instruction, address))
+            cursor += len(instruction)
+
+    def _disassemble_animation_instructions(self, cursor: int, f: BinaryIO, section: ScriptSection) -> None:
+        if "threads" not in section.attributes:
+            message = f"Attribute 'threads' is missing. Attributes: {section.attributes}"
+            logging.error(message)
+            raise MissingSectionAttribute(message)
+
+        for cursor, threads in section.attributes["threads"].items():
+            line = Line.from_component(ThreadCounter(threads=threads))
+            line.component_info = LineType.THREAD_COUNTER
+            line.address = self.memory_map.to_address(cursor)
+            self.lines.append(line)
+
+        new_animation = True
+        depth = 0
+        while cursor < section.end:
+            address = self.memory_map.to_address(cursor)
+            if new_animation:
+                if not self.labels().find_by_address(address):
+                    pass
+                    # self.lines.append(Line.from_component(Label(value=address)))
+                new_animation = False
+
+            threads = [v for k, v in section.attributes["threads"].items() if k <= cursor][-1]
+            f.seek(cursor)
+            value = f.read(12)
+
+            instruction = AnimationInstruction.from_bytes(
+                threads=threads, address=address, value=value, variables=self.variables(), depth=depth
+            )
+
+            if instruction.labels:
+                for label in instruction.labels:
+                    if not self.labels().find_by_address(label.value):
+                        line = Line.from_component(label)
+                        line.address = label.value
+                        line.component_info = LineType.LABEL
+                        self.lines.append(line)
+            if instruction.command.is_ending:
+                new_animation = True
+                depth = 0
+            else:
+                depth += instruction.command.depth_modifier
 
             self.lines.append(Line.from_component(instruction, address))
             cursor += len(instruction)

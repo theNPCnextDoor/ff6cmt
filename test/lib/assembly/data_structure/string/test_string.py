@@ -1,10 +1,10 @@
 import pytest
 
 from src.lib.assembly.artifact.variable import Constant
-from src.lib.assembly.data_structure.instruction.operand import Operand
+from src.lib.common.operand import Operand
 from src.lib.assembly.data_structure.string.string import String
-from src.lib.assembly.bytes import Bytes
-from test.lib.assembly.conftest import addr
+from src.lib.common.bytes import Bytes
+from test.lib.conftest import addr
 
 
 class TestString:

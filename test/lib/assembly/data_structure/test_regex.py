@@ -267,7 +267,7 @@ class TestInstructionRegex:
         ],
     )
     def test_op_value(self, value: str, expected: bool):
-        match = re.fullmatch(InstructionRegex.OP_VALUE, value)
+        match = re.fullmatch(Regex.OP_VALUE, value)
         assert bool(match) is expected
 
     @pytest.mark.parametrize(

@@ -1,7 +1,7 @@
 import tomllib
 from pathlib import Path
 
-from src.lib.assembly.script.script import Script
+from src.lib.common.script.script import Script
 
 
 def assemble(configs: dict):

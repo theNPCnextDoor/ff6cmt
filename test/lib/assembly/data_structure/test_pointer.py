@@ -3,12 +3,12 @@ from typing import Type
 import pytest
 
 from src.lib.assembly.artifact.variables import Variables
-from src.lib.assembly.bytes import Bytes
+from src.lib.common.bytes import Bytes
 from src.lib.assembly.artifact.variable import Label
-from src.lib.assembly.data_structure.instruction.operand import Operand, OperandType
+from src.lib.common.operand import Operand, OperandType
 from src.lib.assembly.data_structure.pointer import Pointer
 from src.lib.misc.exception import ImpossibleDestination, NoVariableException
-from test.lib.assembly.conftest import TEST_WORD, CHARLIE, addr
+from test.lib.conftest import TEST_WORD, CHARLIE, addr
 
 
 class TestPointer:

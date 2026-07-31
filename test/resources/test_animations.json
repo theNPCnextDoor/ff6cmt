@@ -1,0 +1,31 @@
+{
+  "0x12": {
+    "command": "DUMMY",
+    "length": 2
+  },
+    "0x34": {
+    "command": "DUPLICATE",
+    "length": 1
+  },
+    "0x56": {
+    "command": "DUPLICATE",
+    "length": 3
+  },
+    "0x80": {
+    "command": "JUMP",
+    "length": 2,
+    "type": "jumping"
+  },
+    "0xCC": {
+      "command": "VARIABLE_LENGTH",
+      "length": "variable",
+      "type": "jumping"
+    },
+  "0xF0": {
+    "has_subcommands": true
+  },
+  "0xF000": {
+    "command": "SUB_00",
+    "length": 1
+  }
+}

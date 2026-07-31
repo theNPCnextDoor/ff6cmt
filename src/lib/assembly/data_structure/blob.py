@@ -4,9 +4,9 @@ import logging
 from typing import Self, Any
 
 from src.lib.assembly.artifact.variables import Variables
-from src.lib.assembly.data_structure.instruction.operand import Operand, OperandType
-from src.lib.assembly.data_structure.data_structure import DataStructure
-from src.lib.assembly.bytes import Bytes
+from src.lib.common.operand import Operand, OperandType
+from src.lib.common.data_structure import DataStructure
+from src.lib.common.bytes import Bytes
 from src.lib.misc.exception import DelimiterLengthError
 
 

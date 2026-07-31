@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import Self, Any
 
-from src.lib.assembly.artifact.artifact import Artifact
-from src.lib.assembly.bytes import Bytes
+from src.lib.common.artifact import Artifact
+from src.lib.common.bytes import Bytes
 from src.lib.misc.exception import UnrecognizedMappingMode, IllegalRomPosition, IllegalAddress
 
 

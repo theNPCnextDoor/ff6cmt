@@ -42,6 +42,10 @@ class NoVariableException(Exception):
     pass
 
 
+class OperandLengthException(Exception):
+    pass
+
+
 class TooManyCandidatesException(Exception):
     pass
 
@@ -55,6 +59,10 @@ class UndefinedFlags(Exception):
 
 
 class UndefinedMappingMode(Exception):
+    pass
+
+
+class UndefinedThreads(Exception):
     pass
 
 

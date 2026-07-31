@@ -3,7 +3,7 @@ from typing import Any
 import pytest
 
 from src.lib.misc.exception import UnderflowError
-from src.lib.assembly.bytes import Bytes, Endian
+from src.lib.common.bytes import Bytes, Endian
 
 
 class TestBytes:

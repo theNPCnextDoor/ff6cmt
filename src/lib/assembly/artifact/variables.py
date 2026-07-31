@@ -2,7 +2,7 @@ import logging
 from typing import Self
 
 from src.lib.assembly.artifact.variable import Label, Variable
-from src.lib.assembly.bytes import Bytes
+from src.lib.common.bytes import Bytes
 from src.lib.misc.exception import VariableConflict
 
 

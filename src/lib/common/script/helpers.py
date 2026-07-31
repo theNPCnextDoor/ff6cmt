@@ -6,19 +6,21 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Self
 
-from src.lib.assembly.artifact.artifact import Artifact
+from src.lib.common.artifact import Artifact
 from src.lib.assembly.artifact.flags import Flags
 from src.lib.assembly.artifact.memory_map import MemoryMap
 from src.lib.assembly.artifact.variable import Label, Variable
-from src.lib.assembly.bytes import Bytes
+from src.lib.common.bytes import Bytes
 from src.lib.assembly.data_structure.array import Array
 from src.lib.assembly.data_structure.blob import Blob
-from src.lib.assembly.data_structure.data_structure import DataStructure
+from src.lib.common.data_structure import DataStructure
 from src.lib.assembly.data_structure.instruction.instruction import Instruction
 from src.lib.assembly.data_structure.pointer import Pointer
 from src.lib.assembly.data_structure.regex import InstructionRegex, ArtifactRegex, DataStructureRegex
 from src.lib.assembly.data_structure.string.string import String, StringType
-from src.lib.misc.exception import MissingSectionAttribute
+from src.lib.pseudo_languages.animation.animation_instruction import AnimationInstruction
+from src.lib.pseudo_languages.animation.thread_counter import ThreadCounter
+from src.lib.misc.exception import MissingSectionAttribute, UndefinedThreads
 
 Component = Artifact | DataStructure
 
@@ -28,6 +30,7 @@ class ScriptMode:
     Script modes allows the disassembler to correctly interpret data it reads on the ROM.
     """
 
+    ANIMATION_INSTRUCTIONS = "AnimationInstructions"
     INSTRUCTIONS = "Instructions"
     POINTERS = "Pointers"
     BLOBS = "Blobs"
@@ -136,6 +139,9 @@ class LineType:
     """
 
     ANCHOR = ComponentInfo("Anchor", None, ArtifactRegex.ANCHOR, ("value",))
+    ANIMATION_INSTRUCTION = ComponentInfo(
+        "AnimationInstruction", AnimationInstruction, DataStructureRegex.ANIMATION_INSTRUCTION, ("command", "operands")
+    )
     ARRAY = ComponentInfo("Array", Array, DataStructureRegex.ARRAY, tuple())
     BLOB = ComponentInfo("Blob", Blob, DataStructureRegex.BLOB, ("operand", "delimiter"))
     FLAGS = ComponentInfo("Flags", Flags, ArtifactRegex.FLAGS, ("m_flag", "x_flag"))
@@ -144,6 +150,7 @@ class LineType:
     MEMORY_MAP = ComponentInfo("MemoryMap", MemoryMap, ArtifactRegex.MEMORY_MAP, ("mapping_mode",))
     POINTER = ComponentInfo("Pointer", Pointer, DataStructureRegex.POINTER, ("operand",))
     STRING = ComponentInfo("String", String, DataStructureRegex.STRING, ("string_type", "string", "delimiter"))
+    THREAD_COUNTER = ComponentInfo("ThreadCounter", ThreadCounter, ArtifactRegex.THREAD_COUNTER, ("threads",))
     VARIABLE_DECLARATION = ComponentInfo(
         "Variable", Variable, ArtifactRegex.VARIABLE_DECLARATION, ("length", "name", "operand")
     )
@@ -207,3 +214,12 @@ class Line:
             line.component_info = line_types[0]
         line.raw_line = line.component.to_line()
         return line
+
+
+def find_closest_n_threads(threads_dict: dict[int, int], cursor: int) -> int:
+    are_before_cursor = [k for k, v in threads_dict.items() if v <= cursor]
+    if not are_before_cursor:
+        message = f"Can't find the number of threads set prior to address 0x{str(Bytes.from_address(cursor))}."
+        logging.error(message)
+        raise UndefinedThreads(message)
+    return are_before_cursor[-1]

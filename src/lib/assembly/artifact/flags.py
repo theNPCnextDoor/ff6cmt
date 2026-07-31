@@ -1,7 +1,7 @@
 import logging
 from typing import Self, Any
 
-from src.lib.assembly.artifact.artifact import Artifact
+from src.lib.common.artifact import Artifact
 
 
 class RegisterWidth:

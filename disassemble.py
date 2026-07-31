@@ -3,11 +3,11 @@ import tomllib
 
 from src.lib.assembly.artifact.flags import Flags
 from src.lib.assembly.artifact.variable import Constant
-from src.lib.assembly.bytes import Bytes
+from src.lib.common.bytes import Bytes
 from src.lib.assembly.data_structure.string.string import StringTypes
-from src.lib.assembly.script.script import Script
-from src.lib.assembly.script.helpers import ScriptSection, ScriptMode, SubSection, ArrayPattern
-from src.lib.misc.exception import UnrecognizedArrayPattern, UnrecognizedStringType
+from src.lib.common.script.script import Script
+from src.lib.common.script.helpers import ScriptSection, ScriptMode, SubSection, ArrayPattern
+from src.lib.misc.exception import UnrecognizedArrayPattern
 
 
 def disassemble(configs: dict) -> None:
@@ -26,6 +26,8 @@ def disassemble(configs: dict) -> None:
 
         if section.mode == ScriptMode.STRINGS:
             section.attributes["string_type"] = StringTypes.get_by_name(el.get("string_type", None))
+
+        section.attributes["threads"] = {int(k, 16): int(v) for k, v in el.get("threads", dict()).items()}
 
         subsections = list()
         if pattern := el.get("pattern", None):

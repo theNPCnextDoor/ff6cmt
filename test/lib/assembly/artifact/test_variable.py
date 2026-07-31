@@ -1,9 +1,9 @@
 import pytest
 
-from src.lib.assembly.bytes import Bytes
+from src.lib.common.bytes import Bytes
 from src.lib.assembly.artifact.variable import Constant, Label, Variable
 from src.lib.misc.exception import ForbiddenVarName, IllegalConstantLength
-from test.lib.assembly.conftest import ALFA, BRAVO, CHARLIE, ECHO, addr
+from test.lib.conftest import ALFA, BRAVO, CHARLIE, ECHO, addr
 
 
 class TestVariable:

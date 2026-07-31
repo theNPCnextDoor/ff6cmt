@@ -3,7 +3,7 @@ import pytest
 
 from src.lib.assembly.artifact.variable import Label, Constant
 from src.lib.assembly.artifact.variables import Variables
-from src.lib.assembly.bytes import Bytes
+from src.lib.common.bytes import Bytes
 
 
 def addr(value: int) -> Bytes:

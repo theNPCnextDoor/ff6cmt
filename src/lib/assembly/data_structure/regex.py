@@ -7,10 +7,12 @@ class Regex:
     CHAR = r"[0-9a-zA-Z!?/:“”\'\-.,…;#+\(\)%~=¨↑→↙× _]|<[xA-Z0-9 ]+>"
     VARIABLE = r"[a-z][0-9a-z_]+"
     SNES_ADDRESS = rf"[4-9A-F][0-9A-F]{WORD}"
+    OP_VALUE = rf"(\${DATA}|[.!]?{VARIABLE})"
 
 
 class ArtifactRegex:
-    MEMORY_MAP = "map: (?P<mapping_mode>(Lo|Hi|ExHi)ROM)"
+    THREAD_COUNTER = r"n_threads: (?P<threads>\d+)"
+    MEMORY_MAP = r"map: (?P<mapping_mode>(Lo|Hi|ExHi)ROM)"
     FLAGS = r"m *= *(?P<m_flag>(8|16)), *x *= *(?P<x_flag>(8|16))"
     LABEL = rf"^@(?P<name>{Regex.VARIABLE}) *(= *(?P<snes_address>\${Regex.SNES_ADDRESS}))?"
     VARIABLE_DECLARATION = rf"let (?P<name>{Regex.VARIABLE}) *= *(?P<operand>\$({Regex.BYTE}){{1,2}})"
@@ -18,6 +20,9 @@ class ArtifactRegex:
 
 
 class DataStructureRegex:
+    ANIMATION_INSTRUCTION = (
+        rf"(?P<command>[A-Z][A-Z_0-9?]{{3,}})( (?P<operands>({Regex.OP_VALUE}( {Regex.OP_VALUE})*)))?"
+    )
     DELIMITER = rf"(\.?{Regex.VARIABLE}|\${Regex.BYTE}){Regex.NOT_HEXA}"
     BLOB = rf"(?P<operand>([.!]?{Regex.VARIABLE}|\$({Regex.BYTE})+){Regex.NOT_HEXA})(,(?P<delimiter>{DELIMITER}))?"
     STRING = rf'((?P<string_type>desc) )?"(?P<string>({Regex.CHAR})+)"(,(?P<delimiter>{DELIMITER}))?'
@@ -27,10 +32,9 @@ class DataStructureRegex:
 
 
 class InstructionRegex:
-    OP_VALUE = rf"(\${Regex.DATA}|[.!]?{Regex.VARIABLE})"
-    IMMEDIATE_MODE = rf"#{OP_VALUE}"
-    ABSOLUTE_MODE = rf"{OP_VALUE}(,[SXY])?"
-    DIRECT_MODE = rf"\({OP_VALUE}(,X\)|\),Y|,S\),Y|\))"
-    DIRECT_LONG_MODE = rf"\[{OP_VALUE}\](,Y)?"
+    IMMEDIATE_MODE = rf"#{Regex.OP_VALUE}"
+    ABSOLUTE_MODE = rf"{Regex.OP_VALUE}(,[SXY])?"
+    DIRECT_MODE = rf"\({Regex.OP_VALUE}(,X\)|\),Y|,S\),Y|\))"
+    DIRECT_LONG_MODE = rf"\[{Regex.OP_VALUE}\](,Y)?"
     OPERAND = rf"{IMMEDIATE_MODE}(,{IMMEDIATE_MODE})?|{DIRECT_MODE}|{DIRECT_LONG_MODE}|{ABSOLUTE_MODE}"
     INSTRUCTION = rf"(?P<command>[A-Z]{{3}})( (?P<operand>{OPERAND}))?"

@@ -6,7 +6,7 @@ from typing import Self
 
 from src.lib.assembly.artifact.variable import Label, Variable
 from src.lib.assembly.artifact.variables import Variables
-from src.lib.assembly.bytes import Bytes
+from src.lib.common.bytes import Bytes
 from src.lib.misc.exception import NoVariableException, ImpossibleDestination, UndefinedDestination
 
 
@@ -108,9 +108,9 @@ class Operand:
     def from_bytes(
         cls,
         value: bytes,
-        mode: str,
-        operand_type: OperandType,
-        parent_address: Bytes,
+        mode: str = "_",
+        operand_type: OperandType = OperandType.DEFAULT,
+        parent_address: Bytes = Bytes.from_address(0),
         variables: Variables | None = None,
     ) -> Self:
         """

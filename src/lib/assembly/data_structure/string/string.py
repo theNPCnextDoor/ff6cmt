@@ -5,8 +5,8 @@ from typing import Self, Any
 
 from src.lib.assembly.artifact.variables import Variables
 from src.lib.assembly.data_structure.blob import Blob
-from src.lib.assembly.data_structure.instruction.operand import Operand
-from src.lib.assembly.bytes import Bytes, Endian
+from src.lib.common.operand import Operand
+from src.lib.common.bytes import Bytes, Endian
 from src.lib.assembly.data_structure.regex import Regex
 
 from src.lib.assembly.data_structure.string.charset import Charset, MENU_CHARSET, DESCRIPTION_CHARSET

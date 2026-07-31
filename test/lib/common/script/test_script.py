@@ -5,15 +5,15 @@ import pytest
 from src.lib.assembly.artifact.flags import Flags
 from src.lib.assembly.artifact.memory_map import MappingModes, MemoryMap
 from src.lib.assembly.artifact.variable import Label, Constant
-from src.lib.assembly.bytes import Bytes, Endian
+from src.lib.common.bytes import Bytes, Endian
 from src.lib.assembly.data_structure.array import Array
 from src.lib.assembly.data_structure.blob import Blob
 from src.lib.assembly.data_structure.instruction.instruction import Instruction
-from src.lib.assembly.data_structure.instruction.operand import Operand, OperandType
+from src.lib.common.operand import Operand, OperandType
 from src.lib.assembly.data_structure.pointer import Pointer
 from src.lib.assembly.data_structure.string.charset import MENU_CHARSET, Charset, DESCRIPTION_CHARSET
 from src.lib.assembly.data_structure.string.string import String, StringTypes
-from src.lib.assembly.script.helpers import (
+from src.lib.common.script.helpers import (
     ScriptMode,
     ScriptSection,
     SubSection,
@@ -22,12 +22,12 @@ from src.lib.assembly.script.helpers import (
     Component,
     ArrayPattern,
 )
-from src.lib.assembly.script.script import (
+from src.lib.common.script.script import (
     Script,
 )
 from src.lib.misc.exception import LineConflict, UnrecognizedLine, IllegalRomPosition, IllegalAddress
 from test import RESOURCES_FOLDER
-from test.lib.assembly.conftest import TEST_BYTE, TEST_WORD, TEST_ADDRESS, ALFA, BRAVO, addr, DELTA
+from test.lib.conftest import TEST_BYTE, TEST_WORD, TEST_ADDRESS, ALFA, BRAVO, addr, DELTA
 
 CONFLICTING_FILE_1 = Path(RESOURCES_FOLDER, "conflicting_file_1.asm")
 CONFLICTING_FILE_2 = Path(RESOURCES_FOLDER, "conflicting_file_2.asm")

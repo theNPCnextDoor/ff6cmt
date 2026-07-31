@@ -1,7 +1,7 @@
 import logging
 import re
 
-from src.lib.assembly.bytes import Bytes
+from src.lib.common.bytes import Bytes
 from src.lib.misc.exception import NoCandidateException
 
 

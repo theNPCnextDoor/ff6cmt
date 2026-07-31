@@ -49,7 +49,7 @@ class Bytes:
             self.value = self.value[-length:]
 
     @classmethod
-    def from_int(cls, value: int, length: int | None = None) -> Self:
+    def from_int(cls, value: int, length: int | None = None, endian: Endian = Endian.LITTLE) -> Self:
         """
         Converts an integer into a Bytes object.
         :param value: An integer.
@@ -66,7 +66,7 @@ class Bytes:
             _list.insert(0, next_byte)
             remainder //= 256
 
-        return cls(value=_list, length=length)
+        return cls(value=_list, length=length, endian=endian)
 
     @classmethod
     def from_address(cls, value: int) -> Self:

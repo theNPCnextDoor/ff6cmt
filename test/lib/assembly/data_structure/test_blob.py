@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from src.lib.assembly.data_structure.instruction.operand import Operand
-from src.lib.assembly.bytes import Bytes
+from src.lib.common.operand import Operand
+from src.lib.common.bytes import Bytes
 from src.lib.assembly.data_structure.blob import Blob
-from test.lib.assembly.conftest import TEST_BYTE, BRAVO, ALFA, VARIABLES, addr
+from test.lib.conftest import TEST_BYTE, BRAVO, ALFA, VARIABLES, addr
 
 
 class TestBlob:

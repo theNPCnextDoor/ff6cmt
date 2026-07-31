@@ -2,11 +2,11 @@ import pytest
 
 from src.lib.assembly.artifact.flags import Flags
 from src.lib.assembly.data_structure.instruction.instruction import Instruction
-from src.lib.assembly.data_structure.instruction.operand import Operand, OperandType
+from src.lib.common.operand import Operand, OperandType
 from src.lib.assembly.artifact.variable import Label
-from src.lib.assembly.bytes import Bytes
+from src.lib.common.bytes import Bytes
 from src.lib.misc.exception import NoCandidateException
-from test.lib.assembly.conftest import (
+from test.lib.conftest import (
     TEST_BYTE,
     TEST_WORD,
     TEST_ADDRESS,

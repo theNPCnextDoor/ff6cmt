@@ -16,9 +16,10 @@ from src.lib.assembly.data_structure.blob import Blob
 from src.lib.common.data_structure import DataStructure
 from src.lib.assembly.data_structure.instruction.instruction import Instruction
 from src.lib.assembly.data_structure.pointer import Pointer
-from src.lib.assembly.data_structure.regex import InstructionRegex, ArtifactRegex, DataStructureRegex
+from src.lib.common.regex import InstructionRegex, ArtifactRegex, DataStructureRegex
 from src.lib.assembly.data_structure.string.string import String, StringType
 from src.lib.pseudo_languages.animation.animation_instruction import AnimationInstruction
+from src.lib.pseudo_languages.animation.animation_settings import AnimationSettings
 from src.lib.pseudo_languages.animation.thread_counter import ThreadCounter
 from src.lib.misc.exception import MissingSectionAttribute, UndefinedThreads
 
@@ -141,6 +142,9 @@ class LineType:
     ANCHOR = ComponentInfo("Anchor", None, ArtifactRegex.ANCHOR, ("value",))
     ANIMATION_INSTRUCTION = ComponentInfo(
         "AnimationInstruction", AnimationInstruction, DataStructureRegex.ANIMATION_INSTRUCTION, ("command", "operands")
+    )
+    ANIMATION_SETTINGS = ComponentInfo(
+        "AnimationSettings", AnimationSettings, ArtifactRegex.ANIMATION_SETTINGS, ("speed", "alignment")
     )
     ARRAY = ComponentInfo("Array", Array, DataStructureRegex.ARRAY, tuple())
     BLOB = ComponentInfo("Blob", Blob, DataStructureRegex.BLOB, ("operand", "delimiter"))

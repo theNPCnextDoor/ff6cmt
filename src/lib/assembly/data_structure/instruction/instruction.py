@@ -191,11 +191,12 @@ class Instruction(DataStructure):
         :return: A new Flags object.
         """
         flag_state = 8 if Opcodes[int(self.opcode)]["command"] == "SEP" else 16
+        new_flags = Flags(m=flags.m, x=flags.x)
         if int(self.operands[0].value) & 0x10:
-            flags.x = flag_state
+            new_flags.x = flag_state
         if int(self.operands[0].value) & 0x20:
-            flags.m = flag_state
-        return flags
+            new_flags.m = flag_state
+        return new_flags
 
     def __len__(self) -> int:
         """

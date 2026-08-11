@@ -11,12 +11,13 @@ class Regex:
 
 
 class ArtifactRegex:
-    THREAD_COUNTER = r"n_threads: (?P<threads>\d+)"
+    ANCHOR = rf"#(?P<value>\${Regex.SNES_ADDRESS}|{Regex.VARIABLE})"
+    ANIMATION_SETTINGS = rf"anim_settings: (?P<speed>{Regex.OP_VALUE}), ?(?P<alignment>{Regex.OP_VALUE})"
     MEMORY_MAP = r"map: (?P<mapping_mode>(Lo|Hi|ExHi)ROM)"
     FLAGS = r"m *= *(?P<m_flag>(8|16)), *x *= *(?P<x_flag>(8|16))"
     LABEL = rf"^@(?P<name>{Regex.VARIABLE}) *(= *(?P<snes_address>\${Regex.SNES_ADDRESS}))?"
+    THREAD_COUNTER = r"threads: (?P<threads>\d+)"
     VARIABLE_DECLARATION = rf"let (?P<name>{Regex.VARIABLE}) *= *(?P<operand>\$({Regex.BYTE}){{1,2}})"
-    ANCHOR = rf"#(?P<value>\${Regex.SNES_ADDRESS}|{Regex.VARIABLE})"
 
 
 class DataStructureRegex:

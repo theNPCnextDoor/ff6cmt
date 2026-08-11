@@ -4,7 +4,7 @@ from typing import Self, Any
 
 from src.lib.assembly.artifact.variables import Variables
 from src.lib.assembly.data_structure.blob import Blob
-from src.lib.assembly.data_structure.regex import DataStructureRegex
+from src.lib.common.regex import DataStructureRegex
 from src.lib.common.data_structure import DataStructure
 from src.lib.assembly.data_structure.string.string import String
 from src.lib.common.bytes import Bytes

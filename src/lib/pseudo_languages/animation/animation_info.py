@@ -13,6 +13,8 @@ from src.lib.misc.exception import NoCandidateException, TooManyCandidatesExcept
 class AnimationCommandType(StrEnum):
     DEFAULT = "default"
     JUMPING = "jumping"
+    BRANCHING = "branching"
+    BACKWARD_BRANCHING = "backward_branching"
 
 
 @dataclass

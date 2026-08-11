@@ -2,7 +2,7 @@ import re
 
 import pytest as pytest
 
-from src.lib.assembly.data_structure.regex import Regex, InstructionRegex, DataStructureRegex, ArtifactRegex
+from src.lib.common.regex import Regex, InstructionRegex, DataStructureRegex, ArtifactRegex
 
 
 class TestRegex:
@@ -117,10 +117,20 @@ class TestRegex:
 
 
 class TestArtifactRegex:
-    def test_memory_map(self):
-        match = re.match(ArtifactRegex.MEMORY_MAP, "map: LoROM")
+    @pytest.mark.parametrize(
+        ["line", "speed", "alignment"],
+        [("anim_settings: $00, $40", "$00", "$40"), ("anim_settings: fast, bottom", "fast", "bottom")],
+    )
+    def test_animation_settings(self, line: str, speed: str, alignment: str):
+        match = re.fullmatch(ArtifactRegex.ANIMATION_SETTINGS, line)
         assert bool(match)
-        assert match.group("mapping_mode") == "LoROM"
+        assert match.group("speed") == speed
+        assert match.group("alignment") == alignment
+
+    @pytest.mark.parametrize(["line", "is_match"], [("#label1", True), ("#$C12345", True), ("#$GGGGGG", False)])
+    def test_anchor(self, line: str, is_match: bool):
+        match = re.match(ArtifactRegex.ANCHOR, line)
+        assert bool(match) is is_match
 
     @pytest.mark.parametrize(
         ["line", "is_match", "m_flag", "x_flag"],
@@ -146,6 +156,16 @@ class TestArtifactRegex:
         assert match.group("name") == name
         assert match.group("snes_address") == snes_address
 
+    def test_memory_map(self):
+        match = re.match(ArtifactRegex.MEMORY_MAP, "map: LoROM")
+        assert bool(match)
+        assert match.group("mapping_mode") == "LoROM"
+
+    def test_thread_counter(self):
+        match = re.match(ArtifactRegex.THREAD_COUNTER, "threads: 3")
+        assert bool(match)
+        assert match.group("threads") == "3"
+
     @pytest.mark.parametrize(
         ["line", "is_match", "name", "operand"],
         [
@@ -160,11 +180,6 @@ class TestArtifactRegex:
         if is_match:
             assert match.group("name") == name
             assert match.group("operand") == operand
-
-    @pytest.mark.parametrize(["line", "is_match"], [("#label1", True), ("#$C12345", True), ("#$GGGGGG", False)])
-    def test_anchor(self, line: str, is_match: bool):
-        match = re.match(ArtifactRegex.ANCHOR, line)
-        assert bool(match) is is_match
 
 
 class TestDataStructureRegex:

@@ -536,7 +536,7 @@ class ScriptImpl:
             ),
         ]
 
-        self.script.memory_map = MemoryMap.from_line("HiROM")
+        self.script.cursor.memory_map = MemoryMap.from_line("HiROM")
         self.script.sort_lines()
 
 
@@ -867,8 +867,7 @@ class TestScript:
                     )
         assert len(script.flags_lines()) == len(test_script.flags_lines())
         for i in range(len(script.flags_lines())):
-            assert script.flags_lines()[i].component.m == test_script.flags_lines()[i].component.m
-            assert script.flags_lines()[i].component.x == test_script.flags_lines()[i].component.x
+            assert script.flags_lines()[i].component == test_script.flags_lines()[i].component
 
     def test_disassemble_raises_error_when_illegal_rom_position(self):
         with open(ILLEGAL_ROM_POSITION, "wb") as f:

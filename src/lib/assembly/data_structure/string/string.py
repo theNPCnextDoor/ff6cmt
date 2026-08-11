@@ -7,7 +7,7 @@ from src.lib.assembly.artifact.variables import Variables
 from src.lib.assembly.data_structure.blob import Blob
 from src.lib.common.operand import Operand
 from src.lib.common.bytes import Bytes, Endian
-from src.lib.assembly.data_structure.regex import Regex
+from src.lib.common.regex import Regex
 
 from src.lib.assembly.data_structure.string.charset import Charset, MENU_CHARSET, DESCRIPTION_CHARSET
 from src.lib.misc.exception import DelimiterLengthError, UnrecognizedStringType

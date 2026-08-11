@@ -65,3 +65,6 @@ class Flags(Artifact):
 
     def __eq__(self, other: Self) -> bool:
         return self.m == other.m and self.x == other.x
+
+    def is_invalid(self) -> bool:
+        return self.m == RegisterWidth.INVALID or self.x == RegisterWidth.INVALID

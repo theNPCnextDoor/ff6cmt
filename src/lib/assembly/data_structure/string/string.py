@@ -103,7 +103,7 @@ class String(Blob):
             i += 1
             char = self.string_type.charset.get_char(value=int(value))
             if char.get("argument", False):
-                argument = self.operand.value[i: i + 1] if i < len(self.operand.value) - 1 else None
+                argument = self.operand.value[i: i + 1] if i < len(self.operand.value) else None
                 i += 1
                 char["string"] = char["string"].replace("_", str(argument))
             output += char["string"]

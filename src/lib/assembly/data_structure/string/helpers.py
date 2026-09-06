@@ -1,10 +1,9 @@
 import logging
 from dataclasses import dataclass
 
+from src.lib.assembly.data_structure.regex import DataStructureRegex
 from src.lib.assembly.data_structure.string.charset import Charset
 from src.lib.misc.exception import UnrecognizedStringType
-
-
 
 
 MENU_CHARSET = {
@@ -131,7 +130,7 @@ MENU_CHARSET = {
 }
 DESCRIPTION_CHARSET = {
     "values": {
-        0x01: {"string" : "<LINE>"},
+        0x01: {"string" : "\n"},
         0x80: {"string" : "A"},
         0x81: {"string" : "B"},
         0x82: {"string" : "C"},
@@ -520,6 +519,9 @@ class StringType:
     charset: Charset
     name: str
 
+    def regex(self):
+        return f'{self.prefix + " " if self.prefix else ""}"{self.charset.regex}+"(,{DataStructureRegex.DELIMITER})?'
+
 
 class StringTypes:
     MENU = StringType(None, Charset(MENU_CHARSET), "menu")
@@ -558,3 +560,12 @@ class StringTypes:
         message = f"StringType '{name}' is not recognized."
         logging.error(message)
         raise UnrecognizedStringType(message)
+
+    @classmethod
+    def prefix_regex(cls):
+        string_types = [t for t in cls.__dict__.values() if isinstance(t, StringType)]
+        return "^((?P<prefix>" + "|".join([t.prefix for t in string_types if t.prefix]) + ') )?"'
+
+
+if __name__ == "__main__":
+    print(StringTypes.DUMMY_STRING_TYPE.regex())

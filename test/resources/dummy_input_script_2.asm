@@ -28,7 +28,8 @@ m = 8, x = 16
   "<0x00>A<KNIFE>_",$88
   $AA | "a" | $BB,$FF | "b",$00
 
-  desc "Bob<LINE><FIRE>",$00
+  desc "Bob
+<FIRE>",$00
 
 #anchor_1
   rptr !rptr_1
@@ -40,6 +41,10 @@ m = 8, x = 8 ; Unnecessary flags redefinition here.
   JSR !archie
   $12 | $34 | $56 | treasure_item | item_dummy
   $78 | $AB | $CD | treasure_miab | $01
+
+  dlg "Th
+<PAGE>
+<0x17: 34><SPACES: 08>",$00
 
 @label_c0fedc = $C0FEDC
 @anchor_1 = $D20001

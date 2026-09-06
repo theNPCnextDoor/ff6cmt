@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 
+from lib.assembly.data_structure.string.helpers import FIELD_DIALOG_CHARSET
 from src.lib.assembly.artifact.flags import Flags
 from src.lib.assembly.artifact.memory_map import MappingModes, MemoryMap
 from src.lib.assembly.artifact.variable import Label, Constant
@@ -356,11 +357,11 @@ class ScriptImpl:
                 filename=DUMMY_INPUT_SCRIPT_2,
             ),
             Line(
-                raw_line='  desc "Bob<LINE><FIRE>",$00',
-                clean_line='desc "Bob<LINE><FIRE>",$00',
+                raw_line='  desc "Bob\n<FIRE>",$00',
+                clean_line='desc "Bob\n<FIRE>",$00',
                 address=addr(0xC00034),
                 component_info=LineType.STRING,
-                regex_groups={"string_type": "desc", "string": "Bob<LINE><FIRE>", "delimiter": "$00"},
+                regex_groups={"string_type": "desc", "string": "Bob\n<FIRE>", "delimiter": "$00"},
                 component=String(
                     operand=Operand(Bytes([0x81, 0xA8, 0x9B, 0x01, 0xDC], endian=Endian.BIG)),
                     charset=DESCRIPTION_CHARSET,
@@ -462,6 +463,19 @@ class ScriptImpl:
                         ),
                         Blob(operand=Operand(Bytes([0x01]))),
                     ],
+                ),
+                filename=DUMMY_INPUT_SCRIPT_2,
+            ),
+            Line(
+                raw_line='  dlg "Th\n<PAGE>\n<0x17: 34><SPACES: 08>",$00',
+                clean_line='dlg "Th\n<PAGE>\n<0x17: 34><SPACES: 08>",$00',
+                address=addr(0xC0004D),
+                component_info=LineType.STRING,
+                regex_groups={"string_type": "dlg", "string": "Th\n<PAGE>\n<0x17: 34><SPACES: 08>", "delimiter": "$00"},
+                component=String(
+                    operand=Operand(Bytes([0x9D, 0x01, 0x13, 0x17, 0x34, 0x14, 0x08], endian=Endian.BIG)),
+                    delimiter=Operand(Bytes([0x00])),
+                    string_type=StringTypes.DIALOG,
                 ),
                 filename=DUMMY_INPUT_SCRIPT_2,
             ),
@@ -649,7 +663,7 @@ class TestScript:
             delimiter=Operand(Bytes([0x00]), variable=Constant(Bytes.from_int(0), "delta")),
         )
 
-        assert len(script.string_lines()) == 2
+        assert len(script.string_lines()) == 3
         assert script.string_lines()[0].component == String(
             operand=Operand(Bytes([0x00, 0x80, 0xD8, 0xFF], endian=Endian.BIG)),
             delimiter=Operand(Bytes([0x88])),
@@ -658,6 +672,11 @@ class TestScript:
             operand=Operand(Bytes([0x81, 0xA8, 0x9B, 0x01, 0xDC], endian=Endian.BIG)),
             delimiter=Operand(Bytes([0x00])),
             string_type=StringTypes.DESCRIPTION,
+        )
+        assert script.string_lines()[2].component == String(
+            operand=Operand(Bytes([0x9D, 0x01, 0x13, 0x17, 0x34, 0x14, 0x08], endian=Endian.BIG)),
+            delimiter=Operand(Bytes([0x00])),
+            string_type=StringTypes.DIALOG,
         )
 
         assert len(script.array_lines()) == 3
@@ -721,11 +740,14 @@ class TestScript:
         assert output[0x26:0x29] == b"\xcd\xab\x00"  # $ABCD,delta
         assert output[0x29:0x2E] == b"\x00\x80\xd8\xff\x88"  # "<0x00>A<KNIFE>_",$88
         assert output[0x2E:0x34] == b"\xaa\x9a\xbb\xff\x9b\x00"  # $AA | "a" | $BB,$FF | "b",$00
-        assert output[0x34:0x3A] == b"\x81\xa8\x9b\x01\xdc\x00"  # desc "Bob<LINE><FIRE>",$00
+        assert output[0x34:0x3A] == b"\x81\xa8\x9b\x01\xdc\x00"  # desc "Bob\n<FIRE>",$00
         assert output[0x3A:0x3C] == b"\x55\x34"  # rptr !label_d23456
         assert output[0x3C:0x3E] == b"\x56\x34"  # rptr !label_d23457
         assert output[0x3E:0x40] == b"\x55\x34"  # rptr !label_d23457
         assert output[0x40:0x43] == b"\x20\x05\x00"  # JSR !archie
+        assert output[0x43:0x48] == b"\x12\x34\x56\x40\x01"  # JSR !archie
+        assert output[0x48:0x4D] == b"\x78\x9A\xBC\x20\x01"  # JSR !archie
+        assert output[0x4D:0x55] == b"\x9D\x01\x13\x17\x34\x14\x08\x00"  # JSR !archie
         assert output[0x123457:0x12345B] == b"\x22\x05\x00\xc0"  # JSL archie
 
     def test_parse_raises_error_when_illegal_address(self):
@@ -793,6 +815,14 @@ class TestScript:
                         0x40: Constant(Bytes([0x40]), "treasure_item"),
                     },
                 },
+            ),
+            ScriptSection(
+                start=0x00004D,
+                end=0x000053,
+                mode=ScriptMode.STRINGS,
+                string_type=StringTypes.DIALOG,
+                delimiter=b"\x00",
+                charset=Charset(charset=FIELD_DIALOG_CHARSET),
             ),
             ScriptSection(
                 start=0x123457,
@@ -917,7 +947,8 @@ m = 8, x = 16
   $ABCD,delta
   "<0x00>A<KNIFE>_",$88
   $AA | "a" | $BB,$FF | "b",$00
-  desc "Bob<LINE><FIRE>",$00
+  desc "Bob
+<FIRE>",$00
 
 #anchor_1
   rptr !rptr_1
@@ -928,6 +959,9 @@ m = 8, x = 16
   JSR !archie
   $12 | $34 | $56 | treasure_item | item_dummy
   $78 | $9A | $BC | treasure_miab | $01
+  dlg "Th
+<PAGE>
+<0x17: 34><SPACES: 08>",$00
 
 @label_c0fedc = $C0FEDC
 

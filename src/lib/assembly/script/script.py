@@ -47,6 +47,7 @@ class Script:
         self.lines = list()
         self.memory_map = None
 
+
     @classmethod
     def parse(cls, *filenames: str | Path) -> Self:
         """
@@ -275,9 +276,29 @@ class Script:
         logging.info(f"Appending file '{filename}'.")
 
         with open(filename, encoding="utf-8") as f:
-            for raw_string in f.readlines():
-                if clean_string := clean_line(raw_string):
-                    lines.append(Line(filename, raw_string, clean_string))
+            while raw_string := f.readline():
+                clean_string = clean_line(raw_string)
+                if not clean_string:
+                    continue
+
+                if match := re.match(StringTypes.prefix_regex(), clean_string):
+                    prefix = match.group("prefix")
+                    string_type = StringTypes.get_by_prefix(prefix)
+                    regex = string_type.regex()
+                    if re.fullmatch(regex, clean_string):
+                        lines.append(Line(filename, raw_string, clean_string))
+                        continue
+                    full_string = False
+                    while not full_string:
+                        raw_string += f.readline()
+                        clean_string = clean_line(raw_string)
+                        if re.fullmatch(regex, clean_string):
+                            lines.append(Line(filename, raw_string, clean_string))
+                            break
+                    continue
+
+
+                lines.append(Line(filename, raw_string, clean_string))
 
         return lines
 

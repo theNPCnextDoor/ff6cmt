@@ -65,7 +65,7 @@ class TestCharset:
         [
             ("<0x00>", b"\x00"),
             ("A", b"\x80"),
-            ("<LINE>", b"\x01"),
+            ("\n", b"\x01"),
             ("<HOLY>", b"\xd6"),
             ("<0xEB>", b"\xeb"),
             (" ", b"\xff"),

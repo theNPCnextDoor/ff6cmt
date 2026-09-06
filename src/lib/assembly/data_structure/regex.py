@@ -4,7 +4,7 @@ class Regex:
     BYTE = r"[0-9A-F]{2}"
     WORD = rf"[0-9A-F]{{4}}{NOT_HEXA}"
     DATA = rf"({BYTE}){{1,3}}{NOT_HEXA}"
-    CHAR = r"[0-9a-zA-Z!?/:“”\'\-.,…;#+\(\)%~=¨↑→↙× _]|\n|<[xA-Z0-9 ]+>"
+    CHAR = r"[^\"|<>]|<[xA-Z0-9: ]+>"
     VARIABLE = r"[a-z][0-9a-z_]+"
     SNES_ADDRESS = rf"[4-9A-F][0-9A-F]{WORD}"
 
@@ -20,8 +20,8 @@ class ArtifactRegex:
 class DataStructureRegex:
     DELIMITER = rf"(\.?{Regex.VARIABLE}|\${Regex.BYTE}){Regex.NOT_HEXA}"
     BLOB = rf"(?P<operand>([.!]?{Regex.VARIABLE}|\$({Regex.BYTE})+){Regex.NOT_HEXA})(,(?P<delimiter>{DELIMITER}))?"
-    STRING = rf'((?P<string_type>desc) )?"(?P<string>({Regex.CHAR})+)"(,(?P<delimiter>{DELIMITER}))?'
-    ARRAY_PART = rf'((([.!]?{Regex.VARIABLE}|\$({Regex.BYTE})+){Regex.NOT_HEXA})(,{DELIMITER})?|(desc )?"({Regex.CHAR})+"(,{DELIMITER})?)'
+    STRING = rf'((?P<string_type>desc|dlg) )?"(?P<string>[^"\|]+)"(,(?P<delimiter>{DELIMITER}))?'
+    ARRAY_PART = rf'((([.!]?{Regex.VARIABLE}|\$({Regex.BYTE})+){Regex.NOT_HEXA})(,{DELIMITER})?|((desc|dlg) )?"({Regex.CHAR})+"(,{DELIMITER})?)'
     ARRAY = rf"({ARRAY_PART} *\| *)+{ARRAY_PART}"
     POINTER = rf"(?P<relative>r)?ptr (?P<operand>(\${Regex.WORD})|!{Regex.VARIABLE})"
 

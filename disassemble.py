@@ -4,10 +4,10 @@ import tomllib
 from src.lib.assembly.artifact.flags import Flags
 from src.lib.assembly.artifact.variable import Constant
 from src.lib.assembly.bytes import Bytes
-from src.lib.assembly.data_structure.string.string import StringTypes
+from src.lib.assembly.data_structure.string.helpers import StringTypes
 from src.lib.assembly.script.script import Script
 from src.lib.assembly.script.helpers import ScriptSection, ScriptMode, SubSection, ArrayPattern
-from src.lib.misc.exception import UnrecognizedArrayPattern, UnrecognizedStringType
+from src.lib.misc.exception import UnrecognizedArrayPattern
 
 
 def disassemble(configs: dict) -> None:

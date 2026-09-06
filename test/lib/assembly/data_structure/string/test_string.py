@@ -1,5 +1,6 @@
 import pytest
 
+from src.lib.assembly.data_structure.string.helpers import DUMMY_CHARSET, StringTypes
 from src.lib.assembly.artifact.variable import Constant
 from src.lib.assembly.data_structure.instruction.operand import Operand
 from src.lib.assembly.data_structure.string.string import String
@@ -28,6 +29,14 @@ class TestString:
                 None,
                 String(operand=Operand(Bytes([0x80, 0x81, 0x82]))),
             ),
+            (
+                    "dummy",
+                    """A<PAGE>
+
+<0x03: 12><0xFF>''s""",
+                    "$00",
+                    String(operand=Operand(Bytes([0x01, 0x06, 0x05, 0x03, 0x12, 0xFF, 0x07, 0x08])), delimiter=Operand(Bytes([0x00]))),
+            ),
         ],
     )
     def test_from_line(self, string_type: str | None, string: str, delimiter: str | None, expected: String):
@@ -42,6 +51,7 @@ class TestString:
                 b"\xee",
                 String(operand=Operand(Bytes([0x00, 0x80, 0xD8, 0xEB, 0xFF])), delimiter=Operand(Bytes([0xEE]))),
             ),
+            (b"\x01\x06\x05\x03\x12\xFF\x07\x08", b"\x00", String(operand=Operand(Bytes([0x01, 0x06, 0x05, 0x03, 0x12, 0xFF, 0x07, 0x08])), delimiter=Operand(Bytes([0x00]))))
         ],
     )
     def test_from_bytes(self, data: bytes, delimiter: Bytes | None, string: String):
@@ -58,6 +68,7 @@ class TestString:
                 ),
                 '"ABC",zero',
             ),
+            (String(operand=Operand(Bytes([0x01, 0x06, 0x05, 0x03, 0x12, 0xFF, 0x07, 0x08])), delimiter=Operand(Bytes([0x00])), charset=DUMMY_CHARSET, string_type=StringTypes.DUMMY_STRING_TYPE), 'dummy "A<PAGE>\n\n<0x03: 12><0xFF>\'\'s",$00')
         ],
     )
     def test_str(self, string: String, expected: str):
@@ -77,6 +88,12 @@ class TestString:
                 ),
                 "String(as_str='\"ABC\",zero', as_bytes=b'\\x82\\x81\\x80\\x00', as_hexa=0x80818200, delimiter_var=Constant(name='zero', value=0x00))",
             ),
+            (
+                    String(operand=Operand(Bytes([0x01, 0x06, 0x05, 0x03, 0x12, 0xFF, 0x07, 0x08])), delimiter=Operand(Bytes([0x00])), charset=DUMMY_CHARSET, string_type=StringTypes.DUMMY_STRING_TYPE),
+                    """String(as_str='dummy \"A<PAGE>
+
+<0x03: 12><0xFF>''s\",$00', as_bytes=b'\\x08\\x07\\xff\\x12\\x03\\x05\\x06\\x01\\x00', as_hexa=0x0106050312FF070800)""",
+            ),
         ],
     )
     def test_repr(self, string: String, expected: str):
@@ -91,6 +108,13 @@ class TestString:
                 addr(0xC01234),
                 '  "<0x00>A<KNIFE><0xEB>_",$00 ; $C01234',
             ),
+            (String(operand=Operand(Bytes([0x01, 0x06, 0x05, 0x03, 0x12, 0xFF, 0x07, 0x08])),
+                    delimiter=Operand(Bytes([0x00])), charset=DUMMY_CHARSET, string_type=StringTypes.DUMMY_STRING_TYPE),
+             addr(0xC01234),
+             (
+                """  dummy "A<PAGE>
+
+<0x03: 12><0xFF>\'\'s",$00 ; $C01234"""))
         ],
     )
     def test_to_line(self, string: String, address: Bytes | None, expected: str):

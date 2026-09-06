@@ -4,7 +4,7 @@ class Regex:
     BYTE = r"[0-9A-F]{2}"
     WORD = rf"[0-9A-F]{{4}}{NOT_HEXA}"
     DATA = rf"({BYTE}){{1,3}}{NOT_HEXA}"
-    CHAR = r"[0-9a-zA-Z!?/:“”\'\-.,…;#+\(\)%~=¨↑→↙× _]|<[xA-Z0-9 ]+>"
+    CHAR = r"[0-9a-zA-Z!?/:“”\'\-.,…;#+\(\)%~=¨↑→↙× _]|\n|<[xA-Z0-9 ]+>"
     VARIABLE = r"[a-z][0-9a-z_]+"
     SNES_ADDRESS = rf"[4-9A-F][0-9A-F]{WORD}"
 

@@ -11,8 +11,9 @@ from src.lib.assembly.data_structure.blob import Blob
 from src.lib.assembly.data_structure.instruction.instruction import Instruction
 from src.lib.assembly.data_structure.instruction.operand import Operand, OperandType
 from src.lib.assembly.data_structure.pointer import Pointer
-from src.lib.assembly.data_structure.string.charset import MENU_CHARSET, Charset, DESCRIPTION_CHARSET
-from src.lib.assembly.data_structure.string.string import String, StringTypes
+from src.lib.assembly.data_structure.string.charset import Charset
+from src.lib.assembly.data_structure.string.string import String
+from src.lib.assembly.data_structure.string.helpers import StringTypes, MENU_CHARSET, DESCRIPTION_CHARSET
 from src.lib.assembly.script.helpers import (
     ScriptMode,
     ScriptSection,

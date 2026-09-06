@@ -1,66 +1,16 @@
 import logging
 import re
-from dataclasses import dataclass
 from typing import Self, Any
 
+from src.lib.assembly.data_structure.string.helpers import StringType, StringTypes, MENU_CHARSET
 from src.lib.assembly.artifact.variables import Variables
 from src.lib.assembly.data_structure.blob import Blob
 from src.lib.assembly.data_structure.instruction.operand import Operand
 from src.lib.assembly.bytes import Bytes, Endian
 from src.lib.assembly.data_structure.regex import Regex
 
-from src.lib.assembly.data_structure.string.charset import Charset, MENU_CHARSET, DESCRIPTION_CHARSET
-from src.lib.misc.exception import DelimiterLengthError, UnrecognizedStringType
-
-
-@dataclass
-class StringType:
-    """
-    StringTypes helps determine how to parse a string in a script. The prefix is a word that precedes the string in a
-    script line, such as "desc" for menu descriptions for example. The corresponding charset will be used to parse the
-    string.
-    """
-
-    prefix: str | None
-    charset: Charset
-    name: str
-
-
-class StringTypes:
-    MENU = StringType(None, Charset(MENU_CHARSET), "menu")
-    DESCRIPTION = StringType("desc", Charset(DESCRIPTION_CHARSET), "description")
-
-    @classmethod
-    def get_by_prefix(cls, prefix: str | None = None) -> StringType:
-        """
-        Determines the StringType by the script line prefix.
-        :param prefix: The word that precedes the string in a script line, such as "desc".
-        :return: A StringType.
-        :raise UnrecognizedStringType: Raised when the string prefix is unrecognized.
-        """
-        for string_type in cls.__dict__.values():
-            if isinstance(string_type, StringType) and string_type.prefix == prefix:
-                return string_type
-        else:
-            message = f"Prefix '{prefix}' is not recognized."
-            logging.error(message)
-            raise UnrecognizedStringType(message)
-
-    @classmethod
-    def get_by_name(cls, name: str) -> StringType:
-        """
-        Determines the StringType by its name.
-        :param name: The name of the StringType.
-        :return: A StringType.
-        :raise Unrecognized StringType: Raised when the string prefix is unrecognized.
-        """
-        if name is not None:
-            for string_type in cls.__dict__.values():
-                if isinstance(string_type, StringType) and string_type.name == name:
-                    return string_type
-        message = f"StringType '{name}' is not recognized."
-        logging.error(message)
-        raise UnrecognizedStringType(message)
+from src.lib.assembly.data_structure.string.charset import Charset
+from src.lib.misc.exception import DelimiterLengthError
 
 
 class String(Blob):
@@ -95,7 +45,7 @@ class String(Blob):
         :raises DelimiterLengthError: Raised when there is a variable delimiter, but the variable doesn't have a length of 1.
         """
         _string_type = StringTypes.get_by_prefix(string_type)
-        chars = re.findall(Regex.CHAR, string)
+        chars = re.findall(_string_type.charset.regex, string)
         data = b""
 
         constants = variables.constants if variables else None
@@ -146,8 +96,18 @@ class String(Blob):
             output = f"{self.string_type.prefix} "
 
         output += '"'
-        for number in self.operand.value.value:
-            output += self.string_type.charset.get_char(value=number)
+
+        i = 0
+        while i < len(self.operand.value):
+            value = self.operand.value[i: i+1]
+            i += 1
+            char = self.string_type.charset.get_char(value=int(value))
+            if char.get("argument", False):
+                argument = self.operand.value[i: i + 1] if i < len(self.operand.value) - 1 else None
+                i += 1
+                char["string"] = char["string"].replace("_", str(argument))
+            output += char["string"]
+
         output += '"'
 
         if self.delimiter is not None:
@@ -179,14 +139,15 @@ class String(Blob):
         return output
 
     @classmethod
-    def find_length(cls, string: str, delimiter: str | None = None) -> int:
+    def find_length(cls, string: str, delimiter: str | None = None, prefix: str | None = None) -> int:
         """
         Determines the length of the script line in number of bytes during the pre-parsing phase.
         :param string: The actual string of the script line.
         :param delimiter: The delimiter part of the script line, if it exists. Adds one to the length.
         :return: The number of bytes contained in the String.
         """
-        length = len(re.findall(Regex.CHAR, string))
+        string_type = StringTypes.get_by_prefix(prefix)
+        length = len(re.findall(string_type.charset.regex, string))
         if delimiter:
             length += 1
 

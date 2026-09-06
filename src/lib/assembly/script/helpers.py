@@ -17,7 +17,8 @@ from src.lib.assembly.data_structure.data_structure import DataStructure
 from src.lib.assembly.data_structure.instruction.instruction import Instruction
 from src.lib.assembly.data_structure.pointer import Pointer
 from src.lib.assembly.data_structure.regex import InstructionRegex, ArtifactRegex, DataStructureRegex
-from src.lib.assembly.data_structure.string.string import String, StringType
+from src.lib.assembly.data_structure.string.string import String
+from src.lib.assembly.data_structure.string.helpers import StringType
 from src.lib.misc.exception import MissingSectionAttribute
 
 Component = Artifact | DataStructure

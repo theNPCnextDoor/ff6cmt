@@ -25,7 +25,6 @@ from src.lib.misc.exception import (
     UndefinedFlags,
     MismatchedMappingModes,
     IllegalAddress,
-    UnrecognizedStringType,
 )
 from src.lib.assembly.data_structure.blob import Blob
 from src.lib.assembly.data_structure.array import Array
@@ -33,7 +32,8 @@ from src.lib.assembly.data_structure.pointer import Pointer
 from src.lib.assembly.data_structure.instruction.instruction import Instruction
 from src.lib.assembly.artifact.flags import Flags, RegisterWidth
 from src.lib.assembly.data_structure.regex import InstructionRegex, ArtifactRegex, DataStructureRegex
-from src.lib.assembly.data_structure.string.string import String, StringTypes
+from src.lib.assembly.data_structure.string.string import String
+from src.lib.assembly.data_structure.string.helpers import StringTypes
 from src.lib.assembly.data_structure.data_structure import DataStructure
 from src.lib.assembly.bytes import Bytes
 
@@ -405,7 +405,7 @@ class Script:
             line.component_info = LineType.BLOB
 
         elif match := re.fullmatch(DataStructureRegex.STRING, cleaned_line):
-            cursor += String.find_length(string=match.group("string"), delimiter=match.group("delimiter"))
+            cursor += String.find_length(string=match.group("string"), delimiter=match.group("delimiter"), prefix=match.group("string_type"))
             line.component_info = LineType.STRING
 
         elif match := re.match(InstructionRegex.INSTRUCTION, cleaned_line):

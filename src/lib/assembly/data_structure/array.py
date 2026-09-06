@@ -116,7 +116,7 @@ class Array(DataStructure):
                     operand=match.group("operand"), variables=variables, delimiter=match.group("delimiter")
                 )
             elif match := re.fullmatch(DataStructureRegex.STRING, part.strip()):
-                length += String.find_length(string=match.group("string"), delimiter=match.group("delimiter"))
+                length += String.find_length(string=match.group("string"), delimiter=match.group("delimiter"), prefix=match.group("string_type"))
             else:
                 message = f"Part '{part}' is unrecognized."
                 logging.error(message)

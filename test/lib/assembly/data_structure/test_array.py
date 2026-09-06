@@ -5,7 +5,8 @@ from src.lib.assembly.artifact.variables import Variables
 from src.lib.assembly.data_structure.blob import Blob
 from src.lib.assembly.data_structure.array import Array
 from src.lib.assembly.data_structure.instruction.operand import Operand
-from src.lib.assembly.data_structure.string.string import String, StringTypes
+from src.lib.assembly.data_structure.string.string import String
+from src.lib.assembly.data_structure.string.helpers import StringTypes
 from src.lib.assembly.bytes import Bytes
 from test.lib.assembly.conftest import VARIABLES, addr
 

@@ -21,12 +21,10 @@ class Variables:
 
     def append(self, variable: Variable) -> None:
         """
-        First detects if the new variable is conflicting with the known ones. Then, appends the variable either in
-        the simple variable list or the label one.
+        Appends the variable either in the simple variable list or the label one.
         :param variable: The Variable or Label to be added.
         :return: None.
         """
-        self._detect_conflicts(variable)
         if isinstance(variable, Label):
             self._labels.append(variable)
         else:

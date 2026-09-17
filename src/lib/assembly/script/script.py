@@ -25,6 +25,7 @@ from src.lib.misc.exception import (
     UndefinedFlags,
     MismatchedMappingModes,
     IllegalAddress,
+    UnfinishedString
 )
 from src.lib.assembly.data_structure.blob import Blob
 from src.lib.assembly.data_structure.array import Array
@@ -162,18 +163,17 @@ class Script:
                     logging.debug("Unnecessary flags redefinition. Skipping.")
                     continue
                 flags = line
-            if line.address is not None and cursor != self.memory_map.to_position(line.address):
+            if (
+                    (show_address := (line.address is not None and cursor != self.memory_map.to_position(line.address)))
+                or (isinstance(component, String) and component.string_type == StringTypes.DIALOG)
+            ):
                 if isinstance(component, Label):
                     output.append(component.to_line(show_address=True))
                     logging.debug(f"Setting cursor at 0x{Bytes.from_address(cursor)}.")
                     cursor = self.memory_map.to_position(component.value)
                     continue
 
-                label = Label(value=line.address)
-                logging.info(f"Created {repr(label)}.")
-                self.lines.append(Line.from_component(label))
-                logging.info(f"Writing {repr(label)} to file.")
-                output.append(label.to_line(show_address=True))
+                self._add_adhoc_label(line, output, show_address)
 
             if isinstance(component, Instruction) and component.is_flag_setter():
                 flags = component.set_flags(flags)
@@ -289,14 +289,18 @@ class Script:
                         lines.append(Line(filename, raw_string, clean_string))
                         continue
                     full_string = False
-                    while not full_string:
-                        raw_string += f.readline()
+                    while not full_string and (next_line := f.readline()):
+                        raw_string += next_line
                         clean_string = clean_line(raw_string)
                         if re.fullmatch(regex, clean_string):
                             lines.append(Line(filename, raw_string, clean_string))
+                            full_string = True
                             break
-                    continue
-
+                    if full_string:
+                        continue
+                    message = f"Multiline string '{raw_string}' is not closed before the end of the script."
+                    logging.error(message)
+                    raise UnfinishedString(message)
 
                 lines.append(Line(filename, raw_string, clean_string))
 
@@ -536,11 +540,17 @@ class Script:
                 blob = Blob.from_bytes(data=data, delimiter=delimiter)
             elif string_type == StringTypes.MENU:
                 blob = String.from_bytes(data=data, delimiter=delimiter, string_type=StringTypes.MENU)
-            else:
+            elif string_type == StringTypes.DESCRIPTION:
                 blob = String.from_bytes(
                     data=data,
                     delimiter=delimiter,
                     string_type=StringTypes.DESCRIPTION,
+                )
+            else:
+                blob = String.from_bytes(
+                    data=data,
+                    delimiter=delimiter,
+                    string_type=StringTypes.DIALOG,
                 )
 
             self.lines.append(Line.from_component(blob, address))
@@ -705,3 +715,19 @@ class Script:
         ):
             return False
         return True
+
+    def _add_adhoc_label(self, line: Line, output: list[Line], show_address: bool = False) -> None:
+        """
+        Adds a label during disassembly. Has no effect is the Label already exists at the address
+        of the Line.
+        @param line: The Line for which a Label is added.
+        @param output: The list of Lines constituting the Script.
+        @param show_address: Whether the address should be fixed by the Label.
+        """
+        if self.labels().find_by_address(line.address):
+            return
+        label = Label(value=line.address)
+        logging.info(f"Created {repr(label)}.")
+        self.lines.append(Line.from_component(label))
+        logging.info(f"Writing {repr(label)} to file.")
+        output.append(label.to_line(show_address=show_address))

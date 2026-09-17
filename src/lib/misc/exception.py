@@ -58,6 +58,10 @@ class UndefinedMappingMode(Exception):
     pass
 
 
+class UnfinishedString(Exception):
+    pass
+
+
 class UnderflowError(Exception):
     pass
 
@@ -88,3 +92,5 @@ class UnrecognizedSubsectionMode(Exception):
 
 class VariableConflict(Exception):
     pass
+
+

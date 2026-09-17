@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from lib.assembly.data_structure.string.helpers import FIELD_DIALOG_CHARSET
+from src.lib.assembly.data_structure.string.helpers import FIELD_DIALOG_CHARSET
 from src.lib.assembly.artifact.flags import Flags
 from src.lib.assembly.artifact.memory_map import MappingModes, MemoryMap
 from src.lib.assembly.artifact.variable import Label, Constant
@@ -27,7 +27,7 @@ from src.lib.assembly.script.helpers import (
 from src.lib.assembly.script.script import (
     Script,
 )
-from src.lib.misc.exception import LineConflict, UnrecognizedLine, IllegalRomPosition, IllegalAddress
+from src.lib.misc.exception import LineConflict, UnrecognizedLine, IllegalRomPosition, IllegalAddress, UnfinishedString
 from test import RESOURCES_FOLDER
 from test.lib.assembly.conftest import TEST_BYTE, TEST_WORD, TEST_ADDRESS, ALFA, BRAVO, addr, DELTA
 
@@ -44,6 +44,7 @@ DUMMY_INPUT_ROM = Path(RESOURCES_FOLDER, "dummy_input_rom.rom")
 DUMMY_OUTPUT_ROM = Path(RESOURCES_FOLDER, "dummy_output_rom.sfc")
 ILLEGAL_ADDRESS = Path(RESOURCES_FOLDER, "illegal_address.asm")
 ILLEGAL_ROM_POSITION = Path(RESOURCES_FOLDER, "illegal_rom_position.sfc")
+UNFINISHED_STRING = Path(RESOURCES_FOLDER, "unfinished_string.asm")
 
 LABELS = [
     Label(addr(0xC00001), "start"),
@@ -712,6 +713,10 @@ class TestScript:
         with pytest.raises(LineConflict):
             Script.parse(CONFLICTING_FILE_1, CONFLICTING_FILE_2)
 
+    def test_parse_raises_error_when_string_is_unfished(self):
+        with pytest.raises(UnfinishedString):
+            Script.parse(UNFINISHED_STRING)
+
     def test_assemble(self):
         with open(DUMMY_OUTPUT_ROM, "wb") as f:
             f.write(b"\x00")
@@ -959,6 +964,7 @@ m = 8, x = 16
   JSR !archie
   $12 | $34 | $56 | treasure_item | item_dummy
   $78 | $9A | $BC | treasure_miab | $01
+@label_c0004d
   dlg "Th
 <PAGE>
 <0x17: 34><SPACES: 08>",$00

@@ -57,6 +57,9 @@ Beware, the syntax used for some components may not be standard among other asse
 
 ## Versions
 
+### v1.0.2
+* Fixed an issue where direct pointers were still considering the anchor if it was not None.
+
 ### v.1.0.1
 * Fixed an issue where delimiters and anchors in the config file were not properly
 taken into account during disassembly.

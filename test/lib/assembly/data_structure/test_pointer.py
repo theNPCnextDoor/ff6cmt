@@ -7,21 +7,23 @@ from src.lib.assembly.bytes import Bytes
 from src.lib.assembly.artifact.variable import Label
 from src.lib.assembly.data_structure.instruction.operand import Operand, OperandType
 from src.lib.assembly.data_structure.pointer import Pointer
-from src.lib.misc.exception import ImpossibleDestination, NoVariableException
+from src.lib.misc.exception import ImpossibleDestination, NoVariableException, UndefinedAnchor
 from test.lib.assembly.conftest import TEST_WORD, CHARLIE, addr
 
 
 class TestPointer:
     @pytest.mark.parametrize(
-        ["operand", "address", "anchor", "pointer"],
+        ["relative", "operand", "address", "anchor", "pointer"],
         [
             (
+                "",
                 "$1413",
                 addr(0x111111),
                 None,
                 Pointer(operand=Operand(Bytes([0x14, 0x13]), "_", OperandType.DEFAULT), destination=addr(0x111413)),
             ),
             (
+                "",
                 "!label_1",
                 addr(0xD2FF00),
                 None,
@@ -31,6 +33,7 @@ class TestPointer:
                 ),
             ),
             (
+                "r",
                 "!label_1",
                 addr(0x000001),
                 Operand(addr(0xD21111)),
@@ -41,6 +44,7 @@ class TestPointer:
                 ),
             ),
             (
+                "r",
                 "$1413",
                 addr(0x000001),
                 Operand(addr(0x121111)),
@@ -52,21 +56,22 @@ class TestPointer:
             ),
         ],
     )
-    def test_from_line(self, operand: str, address: Bytes, anchor: Operand | None, pointer: Pointer, labels: Variables):
-        assert Pointer.from_line(operand, address, anchor, labels) == pointer
+    def test_from_line(self, relative: str, operand: str, address: Bytes, anchor: Operand | None, pointer: Pointer, labels: Variables):
+        assert Pointer.from_line(relative, operand, address, anchor, labels) == pointer
 
     @pytest.mark.parametrize(
-        ["operand", "address", "anchor", "exception"],
+        ["relative", "operand", "address", "anchor", "exception"],
         [
-            ("label_3", addr(0x12FF00), None, NoVariableException),
-            ("label_1", addr(0x000000), None, ImpossibleDestination),
+            ("", "label_3", addr(0x12FF00), None, NoVariableException),
+            ("", "label_1", addr(0x000000), None, ImpossibleDestination),
+            ("r", "label_1", addr(0x000000), None, UndefinedAnchor),
         ],
     )
     def test_from_line_raise_exception(
-        self, operand: str, address: Bytes, anchor: Bytes | None, exception: Type[Exception], labels: Variables
+        self, relative: str, operand: str, address: Bytes, anchor: Bytes | None, exception: Type[Exception], labels: Variables
     ):
         with pytest.raises(exception):
-            Pointer.from_line(operand, address, anchor, labels)
+            Pointer.from_line(relative, operand, address, anchor, labels)
 
     @pytest.mark.parametrize(
         ["value", "address", "anchor", "expected", "destination"],

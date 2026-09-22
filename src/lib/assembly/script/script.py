@@ -25,7 +25,6 @@ from src.lib.misc.exception import (
     UndefinedFlags,
     MismatchedMappingModes,
     IllegalAddress,
-    UnrecognizedStringType,
 )
 from src.lib.assembly.data_structure.blob import Blob
 from src.lib.assembly.data_structure.array import Array
@@ -75,6 +74,7 @@ class Script:
         :raises LineConflict: Raised when a line overlaps with the next one, when sorted by address.
         """
         self.sort_lines()
+        self.variables().detect_conflicts()
         data_lines = [line for line in self.lines if line.component and line.component_info != LineType.LABEL]
 
         for i, line in enumerate(data_lines[:-1]):
@@ -349,10 +349,7 @@ class Script:
         :raises MismatchedMappingMode: Raised when two different MemoryMaps are set in the files being parsed.
         """
 
-        # if line.address is not None:
-        #    cursor = self.memory_map.to_position(line.address)
-
-        cleaned_line = line.clean_line  # if isinstance(line, Line) else line
+        cleaned_line = line.clean_line
 
         if match := re.fullmatch(ArtifactRegex.MEMORY_MAP, cleaned_line):
             memory_map = MemoryMap.from_line(match.group("mapping_mode"))
@@ -533,10 +530,7 @@ class Script:
         :param section: The pointer info.
         :return: None.
         """
-        anchor = None
-
-        if address := section.attributes.get("anchor", 0):
-            anchor = Operand(Bytes.from_address(address))
+        if anchor := section.attributes.get("anchor", None):
             label = Label(value=anchor.value)
             if not self.labels().find_by_address(label.value):
                 self.lines.append(Line.from_component(label, label.value))
@@ -580,7 +574,7 @@ class Script:
             elif instruction.labels:
                 for label in instruction.labels:
                     if not self.labels().find_by_address(label.value):
-                        self.lines.append(Line.from_component(label))
+                        self.lines.append(Line.from_component(label, address=label.value))
 
             self.lines.append(Line.from_component(instruction, address))
             cursor += len(instruction)

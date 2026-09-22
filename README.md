@@ -3,6 +3,9 @@
 ## Table of contents
 
 * [Disclaimer](#disclaimer)
+* [Versions](#versions)
+  * [v1.0.1](#v101)
+  * [v1.0.0](#v100)
 * [Requirements](#requirements)
 * [Installation](#installation)
   * [Test your Python version](#test-your-python-version)
@@ -51,6 +54,18 @@ is a text-based editor allowing to modify assembly code and various types of
 data in Final Fantasy 6.
 
 Beware, the syntax used for some components may not be standard among other assemblers.
+
+## Versions
+
+### v.1.0.1
+* Fixed an issue where delimiters and anchors in the config file were not properly
+taken into account during disassembly.
+* Changed the way of detecting variable conflicts during parsing.
+* Fixed an issue where a label added via an instruction would not write the address if
+needed during script dumping.
+
+### v1.0.0
+* Initial version.
 
 ## Requirements
 

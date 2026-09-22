@@ -26,32 +26,32 @@ class Variables:
         :param variable: The Variable or Label to be added.
         :return: None.
         """
-        self._detect_conflicts(variable)
         if isinstance(variable, Label):
             self._labels.append(variable)
         else:
             self._constants.append(variable)
 
-    def _detect_conflicts(self, variable: Variable) -> None:
+    def detect_conflicts(self) -> None:
         """
-        If the variable is a Label, checks first if the address it represents is also represented by another label.
-        Then, checks if the name of the variable already exists.
-        :param variable: The variable to be inserted in the list.
+        Checks if all variables have different names and all labels have different addresses.
         :return: None.
         :raises VariableConflict: Raised when a conflict is detected.
         """
-        if isinstance(variable, Label) and (label := self.find_by_address(variable.value)):
-            message = (
-                f"Address conflict. Labels '{variable.name}' and '{label.name}', both with "
-                f"address {repr(variable.value)} already exists."
-            )
-            logging.error(message)
-            raise VariableConflict(message)
+        variables = self.all()
+        for variable in variables:
+            conflicting_labels = [label for label in variables if label.value == variable.value]
+            if isinstance(variable, Label) and len(conflicting_labels) > 1:
+                message = (
+                    f"Address conflict. There are multiple labels targeting the same address {repr(variable.value)}: "
+                    f"{', '.join([label.name for label in conflicting_labels])}"
+                )
+                logging.error(message)
+                raise VariableConflict(message)
 
-        if self.find_by_name(variable.name):
-            message = f"Name conflict. Variable '{variable.name}' already exists."
-            logging.error(message)
-            raise VariableConflict(message)
+            if len([var for var in variables if var.name == variable.name]) > 1:
+                message = f"Name conflict. Variable '{variable.name}' already exists."
+                logging.error(message)
+                raise VariableConflict(message)
 
     def find_by_name(self, name: str) -> Variable | None:
         """

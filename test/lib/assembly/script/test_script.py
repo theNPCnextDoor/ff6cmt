@@ -25,7 +25,7 @@ from src.lib.assembly.script.helpers import (
 from src.lib.assembly.script.script import (
     Script,
 )
-from src.lib.misc.exception import LineConflict, UnrecognizedLine, IllegalRomPosition, IllegalAddress
+from src.lib.misc.exception import LineConflict, UnrecognizedLine, IllegalRomPosition, IllegalAddress, VariableConflict
 from test import RESOURCES_FOLDER
 from test.lib.assembly.conftest import TEST_BYTE, TEST_WORD, TEST_ADDRESS, ALFA, BRAVO, addr, DELTA
 
@@ -40,6 +40,8 @@ DUMMY_ERROR_SCRIPT = Path(RESOURCES_FOLDER, "dummy_error_script.asm")
 DUMMY_OUTPUT_SCRIPT = Path(RESOURCES_FOLDER, "dummy_output_script.asm")
 DUMMY_INPUT_ROM = Path(RESOURCES_FOLDER, "dummy_input_rom.rom")
 DUMMY_OUTPUT_ROM = Path(RESOURCES_FOLDER, "dummy_output_rom.sfc")
+DUPLICATED_LABELS = Path(RESOURCES_FOLDER, "duplicated_labels.asm")
+DUPLICATED_VARIABLES = Path(RESOURCES_FOLDER, "duplicated_variables.asm")
 ILLEGAL_ADDRESS = Path(RESOURCES_FOLDER, "illegal_address.asm")
 ILLEGAL_ROM_POSITION = Path(RESOURCES_FOLDER, "illegal_rom_position.sfc")
 
@@ -692,6 +694,14 @@ class TestScript:
         with pytest.raises(LineConflict):
             Script.parse(CONFLICTING_FILE_1, CONFLICTING_FILE_2)
 
+    def test_parse_raises_error_when_duplicated_labels(self):
+        with pytest.raises(VariableConflict):
+            Script.parse(DUPLICATED_LABELS)
+
+    def test_parse_raises_error_when_duplicated_variables(self):
+        with pytest.raises(VariableConflict):
+            Script.parse(DUPLICATED_VARIABLES)
+
     def test_assemble(self):
         with open(DUMMY_OUTPUT_ROM, "wb") as f:
             f.write(b"\x00")
@@ -765,8 +775,8 @@ class TestScript:
                 delimiter=b"\x00",
                 charset=Charset(charset=DESCRIPTION_CHARSET),
             ),
-            ScriptSection(start=0x00003A, end=0x00003E, mode=ScriptMode.POINTERS, anchor=0xD20001),
-            ScriptSection(start=0x00003E, end=0x000040, mode=ScriptMode.POINTERS, anchor=0xD20002),
+            ScriptSection(start=0x00003A, end=0x00003E, mode=ScriptMode.POINTERS, anchor=Operand(addr(0xD20001))),
+            ScriptSection(start=0x00003E, end=0x000040, mode=ScriptMode.POINTERS, anchor=Operand(addr(0xD20002))),
             ScriptSection(
                 start=0x000040,
                 end=0x000043,
@@ -816,10 +826,8 @@ class TestScript:
                 == test_script.pointer_lines()[i].component.operand.value
             )
 
-        # assert len(script.instructions()) == len(test_script.instructions())
+        assert len(script.instruction_lines()) == len(test_script.instruction_lines())
         for i in range(len(script.instruction_lines())):
-            if i >= 13:
-                pass
             assert script.instruction_lines()[i].component.opcode == test_script.instruction_lines()[i].component.opcode
             if test_script.instruction_lines()[i].component.operands:
                 assert len(script.instruction_lines()[i].component.operands) == len(

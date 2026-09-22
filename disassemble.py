@@ -1,31 +1,36 @@
 import json
 import tomllib
 
+from lib.assembly.artifact.memory_map import MemoryMap
+from lib.assembly.data_structure.instruction.operand import Operand
 from src.lib.assembly.artifact.flags import Flags
 from src.lib.assembly.artifact.variable import Constant
 from src.lib.assembly.bytes import Bytes
 from src.lib.assembly.data_structure.string.string import StringTypes
 from src.lib.assembly.script.script import Script
 from src.lib.assembly.script.helpers import ScriptSection, ScriptMode, SubSection, ArrayPattern
-from src.lib.misc.exception import UnrecognizedArrayPattern, UnrecognizedStringType
+from src.lib.misc.exception import UnrecognizedArrayPattern
 
 
 def disassemble(configs: dict) -> None:
     sections = []
+    memory_map = MemoryMap.from_line(configs["mapping_mode"])
     for el in configs["sections"]:
+        anchor = el.get("anchor", None)
+        delimiter = el.get("delimiter", None)
+        flags = el.get("flags", None)
+        string_type = el.get("string_type", None)
+
         section = ScriptSection(
             start=el["start"],
             end=el["end"],
             mode=getattr(ScriptMode, el["mode"]),
             length=el.get("length", None),
-            delimiter=el.get("delimiter", None),
+            delimiter=Bytes.from_int(delimiter) if delimiter is not None else None,
+            anchor=Operand(memory_map.to_address(anchor)) if anchor is not None else None,
+            flags=Flags(m=flags["m"], x=flags["x"]) if flags is not None else None,
+            string_type=StringTypes.get_by_name(string_type) if string_type is not None else None
         )
-
-        if flags := el.get("flags", None):
-            section.attributes["flags"] = Flags(m=flags["m"], x=flags["x"])
-
-        if section.mode == ScriptMode.STRINGS:
-            section.attributes["string_type"] = StringTypes.get_by_name(el.get("string_type", None))
 
         subsections = list()
         if pattern := el.get("pattern", None):

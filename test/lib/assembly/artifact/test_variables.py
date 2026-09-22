@@ -15,15 +15,15 @@ class TestVariables:
         assert variables == Variables(ALFA, CHARLIE)
 
     def test_append_raises_variable_conflict_because_of_existing_address(self):
-        variables = Variables(CHARLIE)
+        variables = Variables(CHARLIE, CHARLIE)
         with pytest.raises(VariableConflict) as e:
-            variables.append(CHARLIE)
+            variables.detect_conflicts()
         assert "address" in str(e.value).lower()
 
     def test_append_raises_variable_conflict_because_of_existing_name(self):
-        variables = Variables(ALFA)
+        variables = Variables(ALFA, Constant(addr(0), "alfa"))
         with pytest.raises(VariableConflict) as e:
-            variables.append(Constant(addr(0), "alfa"))
+            variables.detect_conflicts()
         assert "name" in str(e.value).lower()
 
     @pytest.mark.parametrize(["name", "variable"], [("alfa", ALFA), ("charlie", CHARLIE), ("non_existing", None)])

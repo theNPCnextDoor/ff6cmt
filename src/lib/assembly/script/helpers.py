@@ -142,7 +142,7 @@ class LineType:
     INSTRUCTION = ComponentInfo("Instruction", Instruction, InstructionRegex.INSTRUCTION, ("command", "operand"))
     LABEL = ComponentInfo("Label", Label, ArtifactRegex.LABEL, ("name", "snes_address"))
     MEMORY_MAP = ComponentInfo("MemoryMap", MemoryMap, ArtifactRegex.MEMORY_MAP, ("mapping_mode",))
-    POINTER = ComponentInfo("Pointer", Pointer, DataStructureRegex.POINTER, ("operand",))
+    POINTER = ComponentInfo("Pointer", Pointer, DataStructureRegex.POINTER, ("relative", "operand",))
     STRING = ComponentInfo("String", String, DataStructureRegex.STRING, ("string_type", "string", "delimiter"))
     VARIABLE_DECLARATION = ComponentInfo(
         "Variable", Variable, ArtifactRegex.VARIABLE_DECLARATION, ("length", "name", "operand")

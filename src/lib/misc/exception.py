@@ -46,6 +46,10 @@ class TooManyCandidatesException(Exception):
     pass
 
 
+class UndefinedAnchor(Exception):
+    pass
+
+
 class UndefinedDestination(Exception):
     pass
 

@@ -6,7 +6,7 @@ from src.lib.assembly.data_structure.instruction.operand import Operand, Operand
 from src.lib.assembly.bytes import Bytes
 
 from src.lib.assembly.data_structure.data_structure import DataStructure
-from src.lib.misc.exception import ImpossibleDestination
+from src.lib.misc.exception import ImpossibleDestination, UndefinedAnchor
 
 
 class Pointer(DataStructure):
@@ -45,10 +45,16 @@ class Pointer(DataStructure):
 
     @classmethod
     def from_line(
-        cls, operand: str, address: Bytes, anchor: Operand | None = None, labels: Variables | None = None
+        cls,
+        relative: str,
+        operand: str,
+        address: Bytes,
+        anchor: Operand | None = None,
+        labels: Variables | None = None
     ) -> Self:
         """
         Converts a script line into a Pointer.
+        :param relative: Whether the Pointer is relative and therefore must take the Anchor into account.
         :param operand: The destination of the pointer as a word (2-bytes object).
         :param address: The address of the Pointer.
         :param labels: A list of labels used to determine the destination.
@@ -57,12 +63,17 @@ class Pointer(DataStructure):
         :raises ImpossibleDestination: Raised when the destination can't be reached from either the Pointer's address
         or its anchor, when it exists.
         """
-        parent_address = anchor.value if anchor else Bytes.from_address(address.bank())
+        is_relative = (relative == "r")
+        if is_relative and anchor is None:
+            message = "Missing anchor. Please define one prior to the first relative pointer in the script."
+            logging.error(message)
+            raise UndefinedAnchor(message)
+        parent_address = anchor.value if is_relative else Bytes.from_address(address.bank())
         _operand = Operand.from_line(
             value=operand, parent_address=parent_address, operand_type=OperandType.DEFAULT, variables=labels
         )
 
-        if anchor and _operand.variable:
+        if is_relative and _operand.variable:
             _operand.value -= int(anchor.value) % 0x010000
 
         if _operand.variable:

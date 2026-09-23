@@ -4,6 +4,8 @@
 
 * [Disclaimer](#disclaimer)
 * [Versions](#versions)
+  * [v1.0.3](#v103)  
+  * [v1.0.2](#v102)
   * [v1.0.1](#v101)
   * [v1.0.0](#v100)
 * [Requirements](#requirements)
@@ -57,10 +59,13 @@ Beware, the syntax used for some components may not be standard among other asse
 
 ## Versions
 
+### v1.0.3
+* Fixed an issue where pointers extracted from labels were not set as the pointer's variable.
+
 ### v1.0.2
 * Fixed an issue where direct pointers were still considering the anchor if it was not None.
 
-### v.1.0.1
+### v1.0.1
 * Fixed an issue where delimiters and anchors in the config file were not properly
 taken into account during disassembly.
 * Changed the way of detecting variable conflicts during parsing.

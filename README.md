@@ -60,7 +60,8 @@ Beware, the syntax used for some components may not be standard among other asse
 ## Versions
 
 ### v1.0.3
-* Fixed an issue where pointers extracted from labels were not set as the pointer's variable.
+* Fixed an issue where labels extracted from pointers were not set as the pointer's variable and
+therefore would not appear correctly when dumping the script in a file.
 
 ### v1.0.2
 * Fixed an issue where direct pointers were still considering the anchor if it was not None.

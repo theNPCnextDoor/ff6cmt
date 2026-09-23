@@ -540,8 +540,12 @@ class Script:
             address = self.memory_map.to_address(cursor)
             pointer = Pointer.from_bytes(address=address, value=pointer_bytes, anchor=anchor)
             label = Label(value=pointer.destination)
-            if not self.labels().find_by_address(label.value):
+            found_label = self.labels().find_by_address(label.value)
+            if not found_label:
                 self.lines.append(Line.from_component(label, label.value))
+            else:
+                label = found_label
+            pointer.operand.variable = label
             self.lines.append(Line.from_component(pointer, address))
             cursor += 2
 
